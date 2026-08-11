@@ -26,7 +26,7 @@ export function BuilderCard({
         className="absolute -top-[86px] left-1/2 z-0 flex -translate-x-1/2 flex-col items-center"
       >
         <div className="h-16 w-7 border-x-2 border-goa-green-deep bg-goa-green" />
-        <div className="h-8 w-5 rounded-b-md border-2 border-goa-cream/50 bg-goa-cream/70" />
+        <div className="h-8 w-5 rounded-b-md border-2 border-goa-cream-50 bg-goa-cream-70" />
       </div>
 
       <article
@@ -86,7 +86,7 @@ export function BuilderCard({
             )}
           </div>
 
-          <div className="flex flex-row items-start justify-between gap-4 md:flex-col md:border-l md:border-goa-green-deep/30 md:pl-5">
+          <div className="flex flex-row items-start justify-between gap-4 md:flex-col md:border-l md:border-goa-green-deep-30 md:pl-5">
             <div className="md:hidden">
               <p className="font-mono text-[0.58rem] leading-tight tracking-[0.1em] text-goa-green-deep">
                 EDITION 2026
@@ -108,7 +108,7 @@ export function BuilderCard({
           <p className="mt-1 font-display text-2xl tracking-[0.02em] text-goa-green-deep md:text-[2rem]">
             {name || "YOUR NAME"}
           </p>
-          <div className="mt-4 grid grid-cols-2 gap-4 border-t border-goa-green-deep/30 pt-3">
+          <div className="mt-4 grid grid-cols-2 gap-4 border-t border-goa-green-deep-30 pt-3">
             <div>
               <p className="font-mono text-[0.58rem] tracking-[0.12em] text-goa-pink">
                 STACK / ROLE
@@ -117,7 +117,7 @@ export function BuilderCard({
                 {role || "—"}
               </p>
             </div>
-            <div className="border-l border-goa-green-deep/30 pl-4">
+             <div className="border-l border-goa-green-deep-30 pl-4">
               <p className="font-mono text-[0.58rem] tracking-[0.12em] text-goa-pink">
                 BUILDER TITLE
               </p>
@@ -134,8 +134,8 @@ export function BuilderCard({
             ["COORDINATES", "15.2993° N, 74.1240° E"],
             ["VALID THRU", "FEB 15, 2026"],
           ].map(([k, v], i) => (
-            <div key={k} className={i ? "border-l border-goa-green-deep/40 pl-3" : ""}>
-              <p className="font-mono text-[0.55rem] tracking-[0.1em] text-goa-green-deep/80">
+            <div key={k} className={i ? "border-l border-goa-green-deep-40 pl-3" : ""}>
+                <p className="font-mono text-[0.55rem] tracking-[0.1em] text-goa-green-deep-op80">
                 {k}
               </p>
               <p className="mt-0.5 font-mono text-[0.6rem] font-bold tracking-[0.04em] text-goa-green-deep">

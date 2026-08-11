@@ -47,6 +47,57 @@ export function canShareFile(file: File) {
   return typeof navigator !== "undefined" && !!navigator.canShare?.({ files: [file] });
 }
 
+const shareCache = new Map<string, string>();
+let lastBlob: Blob | undefined;
+let lastFilename: string | undefined;
+
+export function setLastShareBlob(blob: Blob, filename: string) {
+  lastBlob = blob;
+  lastFilename = filename;
+}
+
+export function getLastShareBlob() {
+  return { blob: lastBlob, filename: lastFilename };
+}
+
+export async function shareLastBlob(text: string) {
+  if (lastBlob && lastFilename) {
+    return shareOrIntent({
+      blob: lastBlob,
+      filename: lastFilename,
+      text,
+    });
+  }
+
+  const params = new URLSearchParams({ text });
+  window.open(`https://x.com/intent/post?${params.toString()}`, "_blank", "noreferrer");
+  return "intent";
+}
+
+async function uploadShare(blob: Blob): Promise<string> {
+  const cacheKey = `${blob.size}-${blob.type}`;
+  const cached = shareCache.get(cacheKey);
+  if (cached) return cached;
+
+  const form = new FormData();
+  form.append("file", blob, "share.png");
+
+  const res = await fetch("/api/share/upload", {
+    method: "POST",
+    body: form,
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "Upload failed");
+    throw new Error(`Share upload failed: ${res.status} ${text}`);
+  }
+
+  const { id } = (await res.json()) as { id: string };
+  const shareUrl = `/share/${id}`;
+  shareCache.set(cacheKey, shareUrl);
+  return shareUrl;
+}
+
 export async function shareOrIntent({
   blob,
   filename,
@@ -58,20 +109,33 @@ export async function shareOrIntent({
   text: string;
   url?: string;
 }): Promise<"shared" | "intent"> {
+  let shareUrl = url;
+  let shareText = text;
+
+  if (!shareUrl) {
+    try {
+      shareUrl = await uploadShare(blob);
+      shareText = `${text} ${window.location.origin}${shareUrl}`;
+    } catch {
+      shareUrl = undefined;
+      shareText = text;
+    }
+  } else if (url) {
+    shareText = `${text} ${url}`;
+  }
+
   const file = new File([blob], filename, { type: "image/png" });
   if (canShareFile(file)) {
     try {
-      await navigator.share({ files: [file], text });
+      await navigator.share({ files: [file], text: shareText });
       return "shared";
     } catch (err) {
       if ((err as DOMException)?.name === "AbortError") return "shared";
     }
   }
-  // Desktop: X intents cannot attach a local file. Save the PNG, then open the
-  // composer with the caption prefilled so the user attaches the saved image.
+
   downloadBlob(blob, filename);
-  const params = new URLSearchParams({ text });
-  if (url) params.set("url", url);
+  const params = new URLSearchParams({ text: shareText });
   window.open(`https://x.com/intent/post?${params.toString()}`, "_blank", "noreferrer");
   return "intent";
 }

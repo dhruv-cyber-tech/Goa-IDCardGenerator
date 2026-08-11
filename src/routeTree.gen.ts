@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CardRouteImport } from './routes/card'
 import { Route as FrameRouteImport } from './routes/frame'
+import { Route as ShareIdRouteImport } from './routes/share/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const FrameRoute = FrameRouteImport.update({
   path: '/frame',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShareIdRoute = ShareIdRouteImport.update({
+  id: '/share/$id',
+  path: '/share/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/card': typeof CardRoute
   '/frame': typeof FrameRoute
+  '/share/$id': typeof ShareIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/card': typeof CardRoute
   '/frame': typeof FrameRoute
+  '/share/$id': typeof ShareIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/card': typeof CardRoute
   '/frame': typeof FrameRoute
+  '/share/$id': typeof ShareIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/card' | '/frame'
+  fullPaths: '/' | '/card' | '/frame' | '/share/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/card' | '/frame'
-  id: '__root__' | '/' | '/card' | '/frame'
+  to: '/' | '/card' | '/frame' | '/share/$id'
+  id: '__root__' | '/' | '/card' | '/frame' | '/share/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CardRoute: typeof CardRoute
   FrameRoute: typeof FrameRoute
+  ShareIdRoute: typeof ShareIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FrameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/share/$id': {
+      id: '/share/$id'
+      path: '/share/$id'
+      fullPath: '/share/$id'
+      preLoaderRoute: typeof ShareIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CardRoute: CardRoute,
   FrameRoute: FrameRoute,
+  ShareIdRoute: ShareIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

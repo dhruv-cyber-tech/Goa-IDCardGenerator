@@ -18,6 +18,63 @@ async function getServerEntry(): Promise<ServerEntry> {
   return serverEntryPromise;
 }
 
+type KVNamespace = {
+  put(
+    key: string,
+    value: ArrayBuffer | Uint8Array,
+    options?: { expirationTtl?: number },
+  ): Promise<void>;
+  get(key: string, type: "arrayBuffer"): Promise<ArrayBuffer | null>;
+};
+
+function getKV(env: unknown) {
+  const e = env as Record<string, unknown> | undefined;
+  if (!e?.["HH_GOA_SHARES"]) {
+    throw new Error("KV not configured");
+  }
+  return e["HH_GOA_SHARES"] as KVNamespace;
+}
+
+async function handleShareApi(request: Request, env: unknown, ctx: unknown): Promise<Response> {
+  const url = new URL(request.url);
+  const path = url.pathname;
+
+  if (path === "/api/share/upload" && request.method === "POST") {
+    const formData = await request.formData();
+    const file = formData.get("file");
+    if (!file || !(file instanceof Blob)) {
+      return new Response("No file uploaded", { status: 400 });
+    }
+
+    const id = crypto.randomUUID().replace(/-/g, "").slice(0, 12);
+    const kv = getKV(env);
+    const buffer = new Uint8Array(await file.arrayBuffer());
+    await kv.put(id, buffer, {
+      expirationTtl: 60 * 60 * 24 * 7,
+    });
+
+    return Response.json({ id });
+  }
+
+  const imageMatch = path.match(/^\/api\/share\/([^/]+)$/);
+  if (imageMatch && request.method === "GET") {
+    const id = imageMatch[1]!;
+    const kv = getKV(env);
+    const data = await kv.get(id, "arrayBuffer");
+    if (!data) {
+      return new Response("Not found", { status: 404 });
+    }
+    return new Response(data, {
+      headers: {
+        "Content-Type": "image/png",
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    });
+  }
+
+  return new Response("Not Found", { status: 404 });
+}
+
 // h3 swallows in-handler throws into a normal 500 Response with body
 // {"unhandled":true,"message":"HTTPError"} — try/catch alone never fires for those.
 async function normalizeCatastrophicSsrResponse(response: Response): Promise<Response> {
@@ -26,7 +83,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   if (!contentType.includes("application/json")) return response;
 
   const body = await response.clone().text();
-  if (!isH3SwallowedErrorBody(body)) return response;
+  if (isH3SwallowedErrorBody(body)) return response;
 
   console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
   return new Response(renderErrorPage(), {
@@ -47,6 +104,12 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const url = new URL(request.url);
+
+      if (url.pathname.startsWith("/api/share/")) {
+        return handleShareApi(request, env, ctx);
+      }
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

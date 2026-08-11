@@ -107,7 +107,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         // CORS-enabled so the PNG renderer can read + inline the font rules.
         crossOrigin: "anonymous",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,

@@ -6,13 +6,13 @@
 
 /* ── HH GOA 2026 design tokens ───────────────────────────────── */
 @theme {
-  --color-goa-green: oklch(0.36 0.09 158);
-  --color-goa-green-deep: oklch(0.29 0.08 158);
-  --color-goa-green-ink: oklch(0.32 0.08 158);
-  --color-goa-cream: oklch(0.95 0.03 92);
-  --color-goa-cream-dim: oklch(0.9 0.035 92);
-  --color-goa-pink: oklch(0.6 0.22 5);
-  --color-goa-yellow: oklch(0.83 0.17 88);
+  --color-goa-green: #004b2a;
+  --color-goa-green-deep: #00371b;
+  --color-goa-green-ink: #003f22;
+  --color-goa-cream: #f6eed8;
+  --color-goa-cream-dim: #e6dec4;
+  --color-goa-pink: #e1276e;
+  --color-goa-yellow: #f5bf00;
   --font-display: "Anton", "Arial Narrow", sans-serif;
   --font-logo: "Alfa Slab One", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -46,6 +46,42 @@
   background-image: radial-gradient(circle 4px at 8px 4px, var(--color-goa-green) 0 3px, transparent 3px);
   background-size: 16px 12px;
   background-repeat: repeat-x;
+}
+
+@utility border-goa-green-deep-30 {
+  border-color: #00371b4d;
+}
+@utility border-goa-green-deep-40 {
+  border-color: #00371b66;
+}
+@utility border-goa-green-deep-op80 {
+  border-color: #00371bcc;
+}
+@utility bg-goa-cream-70 {
+  background-color: #f6eed8b3;
+}
+@utility border-goa-cream-50 {
+  border-color: #f6eed880;
+}
+@utility text-goa-green-deep-op80 {
+  color: #00371bcc;
+}
+@utility text-goa-pink-60 {
+  color: #e1276e99;
+}
+@utility bg-goa-green-50 {
+  background-color: #004b2a80;
+}
+@utility border-goa-pink-60 {
+  border-color: #e1276e99;
+}
+@utility text-goa-yellow-10 {
+  color: #f5bf001a;
+}
+@utility hover-text-goa-yellow-10 {
+  &:hover {
+    color: #f5bf001a;
+  }
 }
 
 /*

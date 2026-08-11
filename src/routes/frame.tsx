@@ -6,7 +6,7 @@ import { UploadArea } from "@/components/hh/UploadArea";
 import { DownloadButton, ShareNote, ShareToXButton } from "@/components/hh/ActionButtons";
 import { Foliage, RoundStamp, Signposts, StampCard } from "@/components/hh/Stickers";
 import { usePhoto } from "@/components/hh/usePhoto";
-import { downloadBlob, renderNodeToPng, SHARE_HASHTAG, shareOrIntent } from "@/lib/hh/export";
+import { downloadBlob, getLastShareBlob, renderNodeToPng, setLastShareBlob, SHARE_HASHTAG, shareOrIntent } from "@/lib/hh/export";
 import { Download, Flower2, Loader2, Lock, Palmtree, Plane, Sparkle } from "lucide-react";
 import ring from "@/assets/profile-frame-ring.png";
 import sunset from "@/assets/goa-sunset-corner.jpg";
@@ -57,8 +57,20 @@ function FramePage() {
   const handleShare = async () => {
     setBusy("share");
     try {
+      let blob = await renderFrame().catch(() => undefined);
+      if (!blob) {
+        const cached = getLastShareBlob();
+        if (cached.blob && cached.filename === filename) {
+          blob = cached.blob;
+        }
+      }
+      if (!blob) {
+        toast.error("Generate your frame first, then share it.");
+        return;
+      }
+      setLastShareBlob(blob, filename);
       const result = await shareOrIntent({
-        blob: await renderFrame(),
+        blob,
         filename,
         text: `Framed and ready for HH Goa 2026. ${SHARE_HASHTAG}`,
       });

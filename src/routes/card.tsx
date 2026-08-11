@@ -9,7 +9,9 @@ import { RoundStamp, StampCard } from "@/components/hh/Stickers";
 import { randomTitle, serialFor, usePhoto } from "@/components/hh/usePhoto";
 import {
   downloadBlob,
+  getLastShareBlob,
   renderNodeToPng,
+  setLastShareBlob,
   SHARE_HASHTAG,
   shareOrIntent,
   slugify,
@@ -76,7 +78,18 @@ function CardPage() {
   const handleShare = async () => {
     setBusy("share");
     try {
-      const blob = await renderCard();
+      let blob = await renderCard().catch(() => undefined);
+      if (!blob) {
+        const cached = getLastShareBlob();
+        if (cached.blob && cached.filename === filename) {
+          blob = cached.blob;
+        }
+      }
+      if (!blob) {
+        toast.error("Generate your card first, then share it.");
+        return;
+      }
+      setLastShareBlob(blob, filename);
       const result = await shareOrIntent({
         blob,
         filename,

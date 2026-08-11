@@ -1,6 +1,7 @@
 import { Palmtree } from "lucide-react";
 import { XLogo } from "./XLogo";
 import { Logo } from "./Logo";
+import { shareLastBlob, SHARE_HASHTAG } from "@/lib/hh/export";
 
 export function Header({
   variant = "full",
@@ -45,14 +46,26 @@ export function Header({
           </>
         )}
         {variant === "compact" && (
-          <a
-            href="https://x.com/intent/post?text=%23FrameInGoa"
-            target="_blank"
-            rel="noreferrer"
+          <button
+            type="button"
+            onClick={() =>
+              shareLastBlob(
+                `${SHARE_HASHTAG} Built in Goa. Shipping ideas, code, and chaos.`,
+              ).catch(() => {
+                window.open(
+                  "https://x.com/intent/post?text=" +
+                    encodeURIComponent(
+                      `${SHARE_HASHTAG} Built in Goa. Shipping ideas, code, and chaos.`,
+                    ),
+                  "_blank",
+                  "noreferrer",
+                );
+              })
+            }
             className="hidden items-center gap-2 bg-goa-pink px-5 py-2.5 font-mono text-[0.72rem] font-bold tracking-[0.12em] text-goa-cream transition-colors hover:bg-goa-pink/90 md:flex"
           >
             SHARE ON X <span aria-hidden="true">→</span>
-          </a>
+          </button>
         )}
         <button
           type="button"
