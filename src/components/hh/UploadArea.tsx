@@ -13,7 +13,10 @@ export function UploadArea({
 
   const handleFiles = (files: FileList | null) => {
     const file = files?.[0];
-    if (file) onSelect(file);
+
+    if (!file) return;
+
+    onSelect(file);
   };
 
   return (
@@ -24,38 +27,56 @@ export function UploadArea({
         type="file"
         accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
         className="sr-only"
-        onChange={(e) => handleFiles(e.target.files)}
+        onChange={(e) => {
+          handleFiles(e.target.files);
+
+          // Allows selecting the same file again
+          e.currentTarget.value = "";
+        }}
       />
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        onDragOver={(e) => e.preventDefault()}
+
+      <label
+        htmlFor="hh-photo"
+        onDragOver={(e) => {
+          e.preventDefault();
+        }}
         onDrop={(e) => {
           e.preventDefault();
           handleFiles(e.dataTransfer.files);
         }}
-        className="block w-full cursor-pointer border-2 border-dashed border-goa-pink/70 bg-transparent px-4 py-7 text-center transition-colors hover:bg-goa-pink/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-goa-pink"
+        className="block w-full cursor-pointer border-2 border-dashed border-goa-pink/70 bg-transparent px-4 py-7 text-center transition-colors hover:bg-goa-pink/5 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-goa-pink"
       >
         {photo ? (
           <span className="flex flex-col items-center gap-3">
-            <img src={photo} alt="Your uploaded photo" className="h-24 w-24 object-cover" />
+            <img
+              src={photo}
+              alt="Your uploaded photo"
+              className="h-24 w-24 object-cover"
+            />
+
             <span className="font-mono text-[0.62rem] tracking-[0.12em] text-goa-green-deep">
               CHANGE PHOTO
             </span>
           </span>
         ) : (
           <span className="flex flex-col items-center">
-            <span className="text-3xl leading-none font-light text-goa-pink" aria-hidden="true">
+            <span
+              className="text-3xl leading-none font-light text-goa-pink"
+              aria-hidden="true"
+            >
               +
             </span>
+
             <span className="mt-3 font-mono text-[0.68rem] font-bold tracking-[0.12em] text-goa-green-deep md:hidden">
               TAP TO UPLOAD
             </span>
+
             <span className="mt-3 hidden font-mono text-[0.62rem] font-bold leading-[1.5] tracking-[0.12em] text-goa-green-deep md:block">
               DRAG &amp; DROP
               <br />
               OR CLICK TO UPLOAD
             </span>
+
             {hint && (
               <span className="mt-2 font-mono text-[0.62rem] tracking-[0.1em] text-goa-green-deep/70">
                 JPG / PNG / HEIC • MAX 10MB
@@ -63,7 +84,7 @@ export function UploadArea({
             )}
           </span>
         )}
-      </button>
+      </label>
     </div>
   );
 }

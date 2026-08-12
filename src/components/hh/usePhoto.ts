@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { normalizePhoto } from "@/lib/hh/normalize";
 import { DEFAULT_FOCUS, detectFocus, type Focus } from "@/lib/hh/face";
+import { upload } from '@vercel/blob/client';
 
 export type FlowState = "initial" | "uploading" | "photo-selected" | "generating" | "generated";
 
@@ -11,21 +12,45 @@ export function usePhoto() {
   const [error, setError] = useState<string | null>(null);
   const objectUrls = useRef<string[]>([]);
 
-  const select = useCallback(async (file: File) => {
-    setError(null);
-    setState("uploading");
-    try {
-      const normalized = await normalizePhoto(file);
-      setPhoto(normalized.url);
+const select = useCallback(async (file: File) => {
+  setError(null);
+  setState("uploading");
+
+  try {
+    console.log("Selected file:", file.name, file.type, file.size);
+
+    // First create a direct browser preview.
+    const previewUrl = URL.createObjectURL(file);
+    setPhoto(previewUrl);
+
+    // Then normalize it for the rest of your application.
+    const normalized = await normalizePhoto(file);
+
+    console.log("Normalized:", normalized.width, normalized.height);
+
+    const blob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload', // You will need a standard Vercel route here to verify tokens
+      });
+      
+      console.log("Uploaded to cloud! URL:", blob.url);
+
+    // Use normalized image after successful processing.
+setPhoto(blob.url); 
       setFocus(DEFAULT_FOCUS);
       setState("photo-selected");
-      // Face detection only steers the crop — the image itself is untouched.
+
       const next = await detectFocus(normalized.canvas);
       setFocus(next);
+
       setState("generated");
     } catch (err) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : "Could not read that image.");
+      console.error("PHOTO ERROR:", err);
+      setError(
+        err instanceof Error
+          ? `${err.name}: ${err.message}`
+          : "Could not read that image."
+      );
       setState("initial");
     }
   }, []);
