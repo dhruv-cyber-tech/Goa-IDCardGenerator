@@ -1,23 +1,14 @@
 import "./lib/error-capture";
 
+import {
+  createStartHandler,
+  defaultStreamHandler,
+} from "@tanstack/react-start/server";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { head, put } from "@vercel/blob";
 
-type ServerEntry = {
-  fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
-};
-
-let serverEntryPromise: Promise<ServerEntry> | undefined;
-
-async function getServerEntry(): Promise<ServerEntry> {
-  if (!serverEntryPromise) {
-    serverEntryPromise = import("@tanstack/react-start/server-entry").then(
-      (m) => (m.default ?? m) as ServerEntry,
-    );
-  }
-  return serverEntryPromise;
-}
+const startHandler = createStartHandler(defaultStreamHandler);
 
 async function handleShareApi(request: Request): Promise<Response> {
   const url = new URL(request.url);
@@ -101,7 +92,7 @@ function isH3SwallowedErrorBody(body: string): boolean {
 }
 
 export default {
-  async fetch(request: Request, env: unknown, ctx: unknown) {
+  async fetch(request: Request) {
     try {
       const url = new URL(request.url);
 
@@ -109,8 +100,7 @@ export default {
         return handleShareApi(request);
       }
 
-      const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
+      const response = await startHandler(request);
 
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
