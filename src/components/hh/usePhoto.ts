@@ -13,30 +13,23 @@ export function usePhoto() {
   const objectUrls = useRef<string[]>([]);
 
 const select = useCallback(async (file: File) => {
-  setError(null);
-  setState("uploading");
+    setError(null);
+    setState("uploading");
 
-  try {
-    console.log("Selected file:", file.name, file.type, file.size);
+    try {
+      console.log("Selected file:", file.name, file.type, file.size);
 
-    // First create a direct browser preview.
-    const previewUrl = URL.createObjectURL(file);
-    setPhoto(previewUrl);
+      // Create a direct browser preview
+      const previewUrl = URL.createObjectURL(file);
+      setPhoto(previewUrl);
 
-    // Then normalize it for the rest of your application.
-    const normalized = await normalizePhoto(file);
+      // Normalize it for the rest of your application locally
+      const normalized = await normalizePhoto(file);
 
-    console.log("Normalized:", normalized.width, normalized.height);
+      console.log("Normalized:", normalized.width, normalized.height);
 
-    const blob = await upload(file.name, file, {
-        access: 'public',
-        handleUploadUrl: '/api/upload', // You will need a standard Vercel route here to verify tokens
-      });
-      
-      console.log("Uploaded to cloud! URL:", blob.url);
-
-    // Use normalized image after successful processing.
-setPhoto(blob.url); 
+      // Use the normalized image's local URL after successful processing
+      setPhoto(normalized.url);
       setFocus(DEFAULT_FOCUS);
       setState("photo-selected");
 
@@ -46,11 +39,13 @@ setPhoto(blob.url);
       setState("generated");
     } catch (err) {
       console.error("PHOTO ERROR:", err);
+
       setError(
         err instanceof Error
           ? `${err.name}: ${err.message}`
           : "Could not read that image."
       );
+
       setState("initial");
     }
   }, []);
